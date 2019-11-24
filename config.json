@@ -1,0 +1,12 @@
+{
+  "monitor": [
+    {
+      "website": "https://www.datadoghq.com",
+      "interval": 5
+    },
+    {
+      "website": "https://www.google.com",
+      "interval": 10
+    }
+  ]
+}
