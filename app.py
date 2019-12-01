@@ -2,7 +2,7 @@ import argparse
 import urllib.parse
 import urllib.request
 
-from monitor.task import PerformanceMonitor
+from monitor.task import HTTPMonitor
 
 
 def url_check(value: str):
@@ -21,9 +21,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     test_config = {
-        # "https://www.datadoghq.com": 5,
-        "https://www.wykop.pl": 5
+        "https://www.datadoghq.com": 3,
+        # "https://www.wykop.pl": 5
     }
 
-    monitor = PerformanceMonitor(test_config)
+    monitor = HTTPMonitor(test_config)
     monitor.start()
+

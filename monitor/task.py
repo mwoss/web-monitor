@@ -1,10 +1,10 @@
 import logging
-from collections import deque
 from sched import scheduler
 from time import time, sleep
 from typing import Callable
 
-from monitor.metrics import store_metrics, WebsiteMetric
+from monitor.constants import SUPPORTED_TIMEFRAMES, TIMEFRAME_REFRESH
+from monitor.metrics import MonitoredWebsite
 from monitor.ui import render_metrics
 
 HOURS_TO_SECOND = 3600
@@ -27,19 +27,22 @@ class ScheduledExecutor:
         self._scheduler.run()
 
 
-class PerformanceMonitor:
-    def __init__(self, config: dict):
-        self.config = config
-        self.metrics_store = {
-            website: WebsiteMetric(website, interval) for website, interval in config.items()
-        }
+class HTTPMonitor:
+    def __init__(self, config: dict, refresh_rate: int = 1):
+        self.refresh_rate = refresh_rate
+        self.monitored_websites = [MonitoredWebsite(website, interval) for website, interval in config.items()]
 
     def start(self):
         executor = ScheduledExecutor()
-        refresh_rate = min(self.config.values())
 
-        for website, interval in self.config.items():
-            executor.schedule(interval, 1, store_metrics, website, self.metrics_store[website])
+        # schedule avalibility checks
+        for website in self.monitored_websites:
+            executor.schedule(website.interval, 1, website.perform_availability_check)
 
-        executor.schedule(refresh_rate, 2, render_metrics, self.metrics_store)
+        # schedule metrics update
+        for website in self.monitored_websites:
+            for time_frame, refresh in TIMEFRAME_REFRESH.items():
+                executor.schedule(refresh, 1, website.refresh_stats, time_frame)
+
+        executor.schedule(self.refresh_rate, 2, render_metrics, self.monitored_websites)
         executor.run()

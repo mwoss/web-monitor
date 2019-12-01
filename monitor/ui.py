@@ -1,7 +1,13 @@
 from os import name, system
-from typing import Dict
+from typing import Dict, List
 
-from monitor.metrics import WebsiteMetric
+from monitor.constants import TIME_FRAMES
+from monitor.metrics import MonitoredWebsite
+
+COLUMNS = [
+    'TimeFrame', "UpdateRate", "Availability", "AvgResponseTime",
+    "MaxResponseTime", "Status 2xx", "Status 4xx", "Status 5xx"
+]
 
 
 class Color:
@@ -25,14 +31,19 @@ def clear_console():
         system('clear')
 
 
-def render_metrics(metrics_info: Dict[str, WebsiteMetric]):
-    clear_console() # its not working in intelij terminal, note this
-    for website, metric_data in metrics_info.items():
-        print("#" * 80)
-        print(f"Metrics for website: {Color.BLUE}{website}{Color.BWHITE} with interval: {Color.MAGENTA}{metric_data.interval}{Color.END} ")
-        print("-" * 80)
-        print("Time frame: 1 minute")
-        print(f"Availability:{Color.GREEN}{metric_data.compute_availability(60)}{Color.END}") # in seconds
-        avg_resp, max_resp = metric_data.compute_response_time(360)
-        print(f"Average response time: {Color.GREEN}{avg_resp}{Color.END}")
-        print(f"Max response time: {Color.GREEN}{max_resp}{Color.END}")
+def row_format(row_size: int) -> str:
+    return "{:<20}" * row_size
+
+
+def render_metrics(monitored_websited: List[MonitoredWebsite]):
+    clear_console()  # its not working in intelij terminal, note this
+
+    for website in monitored_websited:
+        print(row_format(len(COLUMNS)).format(*COLUMNS))
+
+        for time_frame, meta in TIME_FRAMES.items():
+            stats = website.stats[meta['window']]
+            print(row_format(len(COLUMNS)).format(
+                time_frame, meta['rate'], stats.availability, stats.avg_response_time, stats.max_response_time,
+                stats.http_success_count, stats.http_client_error_count, stats.http_server_error_count, 'ok')
+            )
