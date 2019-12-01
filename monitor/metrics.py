@@ -42,6 +42,7 @@ class Metric(metaclass=ABCMeta):
     def compute_metrics(self, time_frame: int, metric_data: List[MetricEntry]) -> None:
         raise NotImplementedError("Metric must implement compute_metrics functionality")
 
+    @abstractmethod
     def to_list_by_timeframe(self, time_frame: int) -> List[float]:
         raise NotImplementedError("Metric must implement to_list_by_timeframe functionality")
 

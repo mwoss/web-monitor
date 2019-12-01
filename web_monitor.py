@@ -1,7 +1,9 @@
 import argparse
+import json
 import urllib.parse
 import urllib.request
 
+from monitor.constants import CONFIG_FILE
 from monitor.task import HTTPMonitor
 
 
@@ -13,18 +15,21 @@ def url_check(value: str):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="by default ")
-    parser.add_argument('-w', '--websites', type=url_check, nargs='+', help="")
-    parser.add_argument('-i', '--intervals', type=int, nargs='+', help="in sec")
-    parser.add_argument('-sl', '--save-log', action='store_true', help="")
+    parser = argparse.ArgumentParser(
+        description="Web-monitor is a console application for website availability & performance monitoring. \n"
+                    "Web-monitor provides few metrics: availability, max/avg response time and status code count \n"
+                    "Application can be configured via config.json file",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
+    parser.add_argument('-sl', '--save-log', action='store_true',
+                        help="When flag is set, all requests, computations and errors are logged to file")
 
     args = parser.parse_args()
 
-    test_config = {
-        "https://www.datadoghq.com": 3,
-        # "https://www.wykop.pl": 5
-    }
+    with open(CONFIG_FILE, 'r') as config_file:
+        config = json.loads(config_file)
 
-    monitor = HTTPMonitor(test_config)
+    parsed_config = {website_config['website']: website_config['interval'] for website_config in config['monitor']}
+
+    monitor = HTTPMonitor(parsed_config)
     monitor.start()
-

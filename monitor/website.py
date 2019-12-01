@@ -5,7 +5,7 @@ from typing import Tuple, List, Iterator
 import requests
 
 from monitor.alert import Alert, AlertType
-from monitor.constants import HOUR_TO_SECONDS
+from monitor.constants import SECONDS_IN_HOUR
 from monitor.metrics import ResponseTimeMetric, HTTPStatusMetric, MetricEntry
 
 
@@ -18,7 +18,7 @@ class MonitoredWebsite:
         self.interval = interval
         self._alert = Alert(website_url)
         self._metrics = [metric() for metric in self.METRICS]
-        self._data_store = deque(maxlen=HOUR_TO_SECONDS // interval)
+        self._data_store = deque(maxlen=SECONDS_IN_HOUR // interval)
 
     def refresh_stats(self, time_frame: int) -> None:
         window_len = max(time_frame // self.interval - self._data_store.maxlen, 0)
