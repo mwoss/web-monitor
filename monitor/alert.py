@@ -18,10 +18,10 @@ class Alert:
         self._alert_state = AlertType.RECOVER
 
     def refresh_availability_alerts(self, availability: float) -> None:
-        if availability < 80 and self._alert_state == AlertType.RECOVER:
+        if availability < self.AVAILABILITY_THRESHOLD and self._alert_state == AlertType.RECOVER:
             self._alert_state = AlertType.DOWN
             self.availability_alerts.append((self._down_message(availability), AlertType.DOWN))
-        elif availability >= 80 and self._alert_state == AlertType.DOWN:
+        elif availability >= self.AVAILABILITY_THRESHOLD and self._alert_state == AlertType.DOWN:
             self._alert_state = AlertType.RECOVER
             self.availability_alerts.append((self._recover_message(availability), AlertType.RECOVER))
 
