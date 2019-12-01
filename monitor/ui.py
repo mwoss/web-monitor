@@ -1,13 +1,9 @@
 from os import name, system
-from typing import Dict, List
+from typing import List
 
+from monitor.alert import AlertType
 from monitor.constants import TIME_FRAMES
-from monitor.metrics import MonitoredWebsite
-
-COLUMNS = [
-    'TimeFrame', "UpdateRate", "Availability", "AvgResponseTime",
-    "MaxResponseTime", "Status 2xx", "Status 4xx", "Status 5xx"
-]
+from monitor.website import MonitoredWebsite
 
 
 class Color:
@@ -16,34 +12,51 @@ class Color:
     GREEN = "\033[32m"
     YELLOW = "\033[33m"
     BLUE = "\033[34m"
-    MAGENTA = "\033[35m"
     CYAN = "\033[36m"
     WHITE = "\033[37m"
-    BWHITE = "\033[97m"
     END = "\033[0m"
     BOLD = "\033[1m"
 
 
-def clear_console():
-    if name == 'nt':
-        system('cls')
-    else:
-        system('clear')
+class ConsoleInterface:
+    COMMON_COLUMNS = ['TimeFrame', "UpdateRate[s]"]
 
+    def __init__(self, metric_names: List[str]):
+        self.metric_names = [*self.COMMON_COLUMNS, *metric_names]
 
-def row_format(row_size: int) -> str:
-    return "{:<20}" * row_size
+    def render_metrics(self, monitored_website: List[MonitoredWebsite]) -> None:
+        self._clear_console()
 
+        for website in monitored_website:
+            print("-" * 100)
 
-def render_metrics(monitored_websited: List[MonitoredWebsite]):
-    clear_console()  # its not working in intelij terminal, note this
+            print(f"Website: {Color.YELLOW}{website.website_url}{Color.END} | "
+                  f"CheckInterval: {Color.CYAN}{website.interval} seconds{Color.END}")
+            print(f"{Color.BOLD}{self._row_format().format(*self.metric_names)}{Color.END}")
 
-    for website in monitored_websited:
-        print(row_format(len(COLUMNS)).format(*COLUMNS))
+            for time_frame, meta in TIME_FRAMES.items():
+                stats = website.get_stats_by_timeframe(time_frame)
+                print(self._row_format().format(*meta.values(), *stats))
 
-        for time_frame, meta in TIME_FRAMES.items():
-            stats = website.stats[meta['window']]
-            print(row_format(len(COLUMNS)).format(
-                time_frame, meta['rate'], stats.availability, stats.avg_response_time, stats.max_response_time,
-                stats.http_success_count, stats.http_client_error_count, stats.http_server_error_count, 'ok')
-            )
+            print(f"{Color.BOLD}Notifications:{Color.END}")
+            for message, alert_type in website.get_alerts():
+                self._print_alert(message, alert_type)
+
+            print("-" * 100)
+
+    def _row_format(self) -> str:
+        return "{:<20}" * len(self.metric_names)
+
+    @staticmethod
+    def _print_alert(message: str, alert_type: AlertType):
+        if alert_type == AlertType.DOWN:
+            print(f"{Color.RED}{message}{Color.END}")
+        else:
+            print(f"{Color.GREEN}{message}{Color.END}")
+
+    @staticmethod
+    def _clear_console() -> None:
+        if name == 'nt':
+            system('cls')
+        else:
+            system('clear')

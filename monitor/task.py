@@ -3,11 +3,9 @@ from sched import scheduler
 from time import time, sleep
 from typing import Callable
 
-from monitor.constants import SUPPORTED_TIMEFRAMES, TIMEFRAME_REFRESH
-from monitor.metrics import MonitoredWebsite
-from monitor.ui import render_metrics
-
-HOURS_TO_SECOND = 3600
+from monitor.constants import TIME_FRAMES
+from monitor.ui import ConsoleInterface
+from monitor.website import MonitoredWebsite
 
 
 class ScheduledExecutor:
@@ -31,18 +29,19 @@ class HTTPMonitor:
     def __init__(self, config: dict, refresh_rate: int = 1):
         self.refresh_rate = refresh_rate
         self.monitored_websites = [MonitoredWebsite(website, interval) for website, interval in config.items()]
+        self.console_interface = ConsoleInterface(MonitoredWebsite.get_metric_names())
 
     def start(self):
         executor = ScheduledExecutor()
 
-        # schedule avalibility checks
+        # schedule availability checks
         for website in self.monitored_websites:
             executor.schedule(website.interval, 1, website.perform_availability_check)
 
         # schedule metrics update
         for website in self.monitored_websites:
-            for time_frame, refresh in TIMEFRAME_REFRESH.items():
-                executor.schedule(refresh, 1, website.refresh_stats, time_frame)
+            for time_frame, meta in TIME_FRAMES.items():
+                executor.schedule(meta['refresh_rate'], 1, website.refresh_stats, time_frame)
 
-        executor.schedule(self.refresh_rate, 2, render_metrics, self.monitored_websites)
+        executor.schedule(self.refresh_rate, 2, self.console_interface.render_metrics, self.monitored_websites)
         executor.run()
