@@ -14,7 +14,7 @@ class TestAlert(unittest.TestCase):
             self.website_alert.refresh_availability_alerts(availability)
 
         expected_result = [AlertType.DOWN, AlertType.RECOVER, AlertType.DOWN, AlertType.RECOVER]
-        result = [entry[1] for entry in self.website_alert.availability_alerts]
+        result = [entry.alert_type for entry in self.website_alert.availability_alerts]
         self.assertListEqual(expected_result, result)
 
     def test_continuous_high_availability_should_not_produce_any_message(self):
@@ -31,7 +31,7 @@ class TestAlert(unittest.TestCase):
         for availability in availabilities:
             self.website_alert.refresh_availability_alerts(availability)
 
-        self.assertEqual(AlertType.DOWN, self.website_alert.availability_alerts[0][1])
+        self.assertEqual(AlertType.DOWN, self.website_alert.availability_alerts[0].alert_type)
         self.assertEqual(1, len(self.website_alert.availability_alerts))
 
     def test_website_should_recover_after_threshold_cross(self):
@@ -41,7 +41,7 @@ class TestAlert(unittest.TestCase):
             self.website_alert.refresh_availability_alerts(availability)
 
         expected_result = [AlertType.DOWN, AlertType.RECOVER]
-        result = [entry[1] for entry in self.website_alert.availability_alerts]
+        result = [entry.alert_type for entry in self.website_alert.availability_alerts]
         self.assertListEqual(expected_result, result)
 
     def test_high_availability_should_not_change_alert_state(self):

@@ -4,7 +4,7 @@ from typing import Tuple, List, Iterator
 
 import requests
 
-from monitor.alert import Alert, AlertType
+from monitor.alert import Alert, AlertType, AlertMessage
 from monitor.constants import SECONDS_IN_HOUR
 from monitor.metrics import ResponseTimeMetric, HTTPStatusMetric, MetricEntry
 
@@ -20,12 +20,16 @@ class MonitoredWebsite:
         self._metrics = [metric() for metric in self.METRICS]
         self._data_store = deque(maxlen=SECONDS_IN_HOUR // interval)
 
-    def refresh_stats(self, time_frame: int) -> None:
-        window_len = max(time_frame // self.interval - self._data_store.maxlen, 0)
+    def refresh_stats(self, timeframe: int) -> None:
+        """
+        Refresh
+        :param timeframe: Specify
+        """
+        window_len = max(len(self._data_store) - timeframe // self.interval, 0)
         metric_data = list(islice(self._data_store, window_len, self._data_store.maxlen))
 
         for metric in self._metrics:
-            metric.compute_metrics(time_frame, metric_data)
+            metric.compute_metrics(timeframe, metric_data)
 
         self._alert.refresh_availability_alerts(self._metrics[-1].website_availability)
 
@@ -39,11 +43,11 @@ class MonitoredWebsite:
         else:
             self._data_store.append(MetricEntry(response.elapsed.total_seconds(), response.status_code))
 
-    def get_alerts(self) -> List[Tuple[str, AlertType]]:
+    def get_alerts(self) -> List[AlertMessage]:
         return self._alert.availability_alerts
 
-    def get_stats_by_timeframe(self, time_frame: int) -> Iterator[float]:
-        return chain.from_iterable([metric.to_list_by_timeframe(time_frame) for metric in self._metrics])
+    def get_stats_by_timeframe(self, timeframe: int) -> Iterator[float]:
+        return chain.from_iterable([metric.to_list_by_timeframe(timeframe) for metric in self._metrics])
 
     @classmethod
     def get_metric_names(cls) -> Iterator[str]:

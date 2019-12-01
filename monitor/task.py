@@ -40,8 +40,8 @@ class HTTPMonitor:
 
         # schedule metrics update
         for website in self.monitored_websites:
-            for time_frame, meta in TIME_FRAMES.items():
-                executor.schedule(meta['refresh_rate'], 1, website.refresh_stats, time_frame)
+            for timeframe, meta in TIME_FRAMES.items():
+                executor.schedule(meta['refresh_rate'], 1, website.refresh_stats, timeframe)
 
         executor.schedule(self.refresh_rate, 2, self.console_interface.render_metrics, self.monitored_websites)
         executor.run()

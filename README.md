@@ -26,10 +26,6 @@ After that you are able to install requirements (only `reqeusts` library) and ru
 $> pip install -r requirements.txt
 $> python web_monitor.py
 ```
-If you want to save log to file use `--save-log` flag:
-```
-$> python web_monitor.py --save-log
-```
 Lastly, use -h for help.
 ```
 $> python web_monitor.py -h
@@ -47,6 +43,7 @@ $> python web_monitor.py -h
     * SSL certificate expiration
 * Possibility to input configuration from command line
 * Configurable timeframes, refresh rate and metrics per website
+* Logging to file ()
  
 #### Notes:
 Code tested on Python 3.8.0

@@ -1,5 +1,5 @@
 from os import name, system
-from typing import List
+from typing import List, Iterator
 
 from monitor.alert import AlertType
 from monitor.constants import TIME_FRAMES
@@ -21,7 +21,7 @@ class Color:
 class ConsoleInterface:
     COMMON_COLUMNS = ['TimeFrame', "UpdateRate[s]"]
 
-    def __init__(self, metric_names: List[str]):
+    def __init__(self, metric_names: Iterator[str]):
         self.metric_names = [*self.COMMON_COLUMNS, *metric_names]
 
     def render_metrics(self, monitored_website: List[MonitoredWebsite]) -> None:
@@ -34,13 +34,13 @@ class ConsoleInterface:
                   f"CheckInterval: {Color.CYAN}{website.interval} seconds{Color.END}")
             print(f"{Color.BOLD}{self._row_format().format(*self.metric_names)}{Color.END}")
 
-            for time_frame, meta in TIME_FRAMES.items():
-                stats = website.get_stats_by_timeframe(time_frame)
+            for timeframe, meta in TIME_FRAMES.items():
+                stats = website.get_stats_by_timeframe(timeframe)
                 print(self._row_format().format(*meta.values(), *stats))
 
             print(f"{Color.BOLD}Notifications:{Color.END}")
-            for message, alert_type in website.get_alerts():
-                self._print_alert(message, alert_type)
+            for alert in website.get_alerts():
+                self._print_alert(alert.alert_message, alert.alert_type)
 
             print("-" * 100)
 

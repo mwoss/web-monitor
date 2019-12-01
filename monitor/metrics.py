@@ -39,25 +39,25 @@ class Metric(metaclass=ABCMeta):
         self._stats = {tf: None for tf in TIME_FRAMES}
 
     @abstractmethod
-    def compute_metrics(self, time_frame: int, metric_data: List[MetricEntry]) -> None:
+    def compute_metrics(self, timeframe: int, metric_data: List[MetricEntry]) -> None:
         raise NotImplementedError("Metric must implement compute_metrics functionality")
 
     @abstractmethod
-    def to_list_by_timeframe(self, time_frame: int) -> List[float]:
+    def to_list_by_timeframe(self, timeframe: int) -> List[float]:
         raise NotImplementedError("Metric must implement to_list_by_timeframe functionality")
 
 
 class ResponseTimeMetric(Metric):
     metric_names = ["AvgResponseTime[s]", "MaxResponseTime[s]"]
 
-    def compute_metrics(self, time_frame: int, metric_data: List[MetricEntry]) -> None:
+    def compute_metrics(self, timeframe: int, metric_data: List[MetricEntry]) -> None:
         responses = [entry.response_time for entry in metric_data]
         avg_time, max_time = round(sum(responses) / len(responses), 4), round(max(responses), 4)
 
-        self._stats[time_frame] = ResponseTimeStats(avg_time, max_time)
+        self._stats[timeframe] = ResponseTimeStats(avg_time, max_time)
 
-    def to_list_by_timeframe(self, time_frame: int) -> List[float]:
-        stats: ResponseTimeStats = self._stats[time_frame]
+    def to_list_by_timeframe(self, timeframe: int) -> List[float]:
+        stats: ResponseTimeStats = self._stats[timeframe]
         return [
             stats.avg_response_time,
             stats.max_response_time
@@ -71,15 +71,15 @@ class HTTPStatusMetric(Metric):
     def website_availability(self):
         return self._stats[ALERT_TIME_FRAME].availability
 
-    def compute_metrics(self, time_frame: int, metric_data: List[MetricEntry]) -> None:
+    def compute_metrics(self, timeframe: int, metric_data: List[MetricEntry]) -> None:
         codes = [entry.status_code_family for entry in metric_data]
         code_counter = Counter(codes)
-        availability = round(len(codes) / code_counter[200], 2) * 100
+        availability = round(code_counter[200] / len(codes), 2) * 100
 
-        self._stats[time_frame] = StatusStats(availability, code_counter[200], code_counter[400], code_counter[500])
+        self._stats[timeframe] = StatusStats(availability, code_counter[200], code_counter[400], code_counter[500])
 
-    def to_list_by_timeframe(self, time_frame: int) -> List[float]:
-        stats: StatusStats = self._stats[time_frame]
+    def to_list_by_timeframe(self, timeframe: int) -> List[float]:
+        stats: StatusStats = self._stats[timeframe]
         return [
             stats.availability,
             stats.http_success_count,
