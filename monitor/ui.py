@@ -19,7 +19,10 @@ class Color:
 
 
 class ConsoleInterface:
-    COMMON_COLUMNS = ['TimeFrame', "UpdateRate[s]"]
+    """
+    Class responsible for displaying all metrics in console
+    """
+    COMMON_COLUMNS = ["TimeFrame", "UpdateRate[s]"]
 
     def __init__(self, metric_names: Iterator[str]):
         self.metric_names = [*self.COMMON_COLUMNS, *metric_names]
@@ -35,7 +38,7 @@ class ConsoleInterface:
             print(f"{Color.BOLD}{self._row_format().format(*self.metric_names)}{Color.END}")
 
             for timeframe, meta in TIME_FRAMES.items():
-                stats = website.get_stats_by_timeframe(timeframe)
+                stats = website.get_stats_by_timeframe(timeframe, display_format=True)
                 print(self._row_format().format(*meta.values(), *stats))
 
             print(f"{Color.BOLD}Notifications:{Color.END}")
@@ -56,7 +59,7 @@ class ConsoleInterface:
 
     @staticmethod
     def _clear_console() -> None:
-        if name == 'nt':
-            system('cls')
+        if name == "nt":
+            system("cls")
         else:
-            system('clear')
+            system("clear")

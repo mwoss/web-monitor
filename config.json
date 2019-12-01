@@ -2,11 +2,11 @@
   "monitor": [
     {
       "website": "https://www.datadoghq.com",
-      "interval": 5
+      "interval": 3
     },
     {
       "website": "https://www.google.com",
-      "interval": 10
+      "interval": 5
     }
   ]
 }

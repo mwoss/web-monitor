@@ -16,6 +16,9 @@ Additionally, program has an alerting module that can notify user if availabilit
 
 The configuration is stored in `config.json` file. Initial schema is stored as an example in file.  
 You can add new website by specifying website URL (as string) and interval check (as time in seconds).
+Valid values:
+* `website_url` - proper URL (protocol://domainOrIPAddress:port/path/filename)
+* `interval` - integer in range: (0, 120); 120 is the first timeframe window
    
 **Running the application**
 
@@ -43,7 +46,10 @@ $> python web_monitor.py -h
     * SSL certificate expiration
 * Possibility to input configuration from command line
 * Configurable timeframes, refresh rate and metrics per website
-* Logging to file ()
+* Logging to file (all requests, computations and errors)
+* Config validation (proper URL address, proper interval type)
+* Improve storing metrics
+    * perform_availability_check method is not able to handle all possible requests exceptions
  
 #### Notes:
 Code tested on Python 3.8.0

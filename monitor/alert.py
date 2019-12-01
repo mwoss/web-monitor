@@ -16,6 +16,9 @@ class AlertMessage:
 
 
 class Alert:
+    """
+    Alerting object responsible for storing all website notifications
+    """
     AVAILABILITY_THRESHOLD = 80
     TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -25,6 +28,11 @@ class Alert:
         self._alert_state = AlertType.RECOVER
 
     def refresh_availability_alerts(self, availability: float) -> None:
+        """
+        Refresh alerts using corresponding AVAILABILITY_THRESHOLD and previous alert message.
+        Messages of the same type cannot be overwritten, only the oldest one is saved for historical reason.
+        :param availability: website availability parameter
+        """
         if availability < self.AVAILABILITY_THRESHOLD and self._alert_state == AlertType.RECOVER:
             self._alert_state = AlertType.DOWN
             self.availability_alerts.append(AlertMessage(self._get_down_message(availability), AlertType.DOWN))
